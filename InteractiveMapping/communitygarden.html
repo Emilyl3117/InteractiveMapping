@@ -1,0 +1,565 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+      <meta charset='utf-8' />
+      <title>Community Garden Locator</title>
+      <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+      <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700' rel='stylesheet'>
+      <!-- Mapbox GL JS -->
+      <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.53.0/mapbox-gl.js'></script>
+      <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.53.0/mapbox-gl.css' rel='stylesheet' />
+      <!-- Geocoder plugin -->
+      <script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v2.0.1/mapbox-gl-geocoder.js'></script>
+      <link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v2.0.1/mapbox-gl-geocoder.css' type='text/css' />
+      <!-- Turf.js plugin -->
+      <script src='https://npmcdn.com/@turf/turf/turf.min.js'></script>
+      <script src='./gardenData.js'></script>
+     
+
+      <style>
+
+        body {
+          color:#404040;
+          font:400 15px/22px 'Source Sans Pro', 'Helvetica Neue', Sans-serif;
+          margin:0;
+          padding:0;
+          -webkit-font-smoothing:antialiased;
+        }
+
+        * {
+          -webkit-box-sizing:border-box;
+          -moz-box-sizing:border-box;
+          box-sizing:border-box;
+        }
+
+        .sidebar {
+          position:absolute;
+          width:25%;
+          height:100%;
+          top:0;left:0;
+          overflow:hidden;
+          border-right:1px solid rgba(0,0,0,0.25);
+        }
+        .pad2 {
+          padding:20px;
+        }
+
+        .map {
+          position:absolute;
+          left:25%;
+          width:75%;
+          top:0;bottom:0;
+        }
+
+        h1 {
+          font-size:22px;
+          margin:0;
+          font-weight:550;
+          line-height: 25px;
+          padding: 20px 2px;
+        }
+        
+        h2 {
+          font-size:14px;
+          color: rgb(255, 255, 255);
+          margin:0;
+          font-weight:300;
+          line-height: 20px;
+          padding: 20px 2px;
+        }
+
+      /*listing*/    
+
+        .heading {
+          background:#fff;
+          border-bottom:1px solid #eee;
+          min-height:60px;
+          line-height:60px;
+          padding:0 10px;
+          background-color: #586949;
+          color: #fff;
+        }
+
+        .listings {
+          height:100%;
+          overflow:auto;
+          padding-bottom:60px;
+        }
+
+        .listings .item {
+          display:block;
+          border-bottom:1px solid #eee;
+          padding:10px;
+          text-decoration:none;
+        }
+
+        .listings .item:last-child { border-bottom:none; }
+        .listings .item .title {
+          display:block;
+          color:#586949;
+          font-weight:700;
+        }
+
+        .listings .item .title small { font-weight:400; }
+        .listings .item.active .title,
+        .listings .item .title:hover { color:rgb(123, 173, 42); }
+        .listings .item.active {
+          background-color:#e6e6e6;
+        }
+        ::-webkit-scrollbar {
+          width:4px;
+          height:3px;
+          border-left:0;
+          background:rgba(0,0,0,0.1);
+        }
+        ::-webkit-scrollbar-track {
+          background:none;
+        }
+        ::-webkit-scrollbar-thumb {
+          background:#586949;
+          border-radius:0;
+        }
+
+      /*map icons*/    
+
+        .marker {
+          border: none;
+          cursor: pointer;
+          height: 15px;
+          width:20px;
+          background-image: url('crop_1.png');
+          background-color: rgba(0, 0, 0, 0);
+        }
+
+        .marker2 {
+          border: none;
+          cursor: pointer;
+          height: 100px;
+          width:100px;
+          background-image: url('youarehere_1.png');
+          background-color: rgba(0, 0, 0, 0);
+        }
+
+        .clearfix { display:block; }
+        .clearfix:after {
+          content:'.';
+          display:block;
+          height:0;
+          clear:both;
+          visibility:hidden;
+        }
+
+        /*popup windows*/    
+        .mapboxgl-popup {
+          padding-bottom: 50px;
+        }
+
+        .mapboxgl-popup-close-button {
+          display:none;
+        }
+        .mapboxgl-popup-content {
+          font:400 15px/22px 'Source Sans Pro', 'Helvetica Neue', Sans-serif;
+          padding:0;
+          width:180px;
+        }
+        .mapboxgl-popup-content-wrapper {
+          padding:1%;
+        }
+        .mapboxgl-popup-content h3 {
+          background:#8BA870;
+          color:#fff;
+          margin:0;
+          display:block;
+          padding:10px;
+          border-radius:3px 3px 0 0;
+          font-weight:700;
+          margin-top:-15px;
+        }
+
+        .mapboxgl-popup-content h4 {
+          margin:0;
+          display:block;
+          padding: 10px 10px 10px 10px;
+          font-weight:700;
+        }
+
+        .mapboxgl-popup-content h5 {
+          margin:0;
+          display:block;
+          padding: 10px 10px 10px 10px;
+          font-weight:400;
+        }
+
+        .mapboxgl-popup-content div {
+          padding:10px;
+        }
+
+        .mapboxgl-container .leaflet-marker-icon {
+          cursor:pointer;
+        }
+
+        .mapboxgl-popup-anchor-top > .mapboxgl-popup-content {
+          margin-top: 15px;
+        }
+
+        .mapboxgl-popup-anchor-top > .mapboxgl-popup-tip {
+          border-bottom-color: #8BA870	;
+        }
+
+      /*geocoder*/
+        /* .geocoder {
+          width:800px;
+          left:80%;
+          } */
+
+          .mapboxgl-ctrl-geocoder {
+          border: 2px solid #00853e;
+          border-radius: 0;
+          position: relative;
+          top: 0;
+          width: 400px;
+          margin-top: 0;
+          border: 0;
+        }
+
+        .mapboxgl-ctrl-geocoder > div {
+          min-width:100%;
+          margin-left:0;
+        }
+      
+      /*zoom to overview*/    
+        #fit {
+        display: block;
+        position: absolute;
+        top: 12px;
+        right: 10px;
+        margin: 0px auto;
+        width: 158px;
+        height: 40px;
+        padding: 10px;
+        border: none;
+        border-radius: 3px;
+        font-size: 12px;
+        text-align: center;
+        color: rgba(119, 117, 117, 0.85);
+        background: rgba(255, 255, 255,0.85);
+        }
+
+      /*map style switch*/    
+        #menu {
+        position: absolute;
+        top: 65px;
+        right: 10px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.85);
+        padding: 10px;
+        font-family: 'Open Sans', sans-serif;
+        font-size: 12px;
+        color: rgba(119, 117, 117, 0.9);
+        text-align: center;
+        border-radius: 3px;
+        }
+
+        input {
+          -webkit-appearance: none;
+          -moz-appearance: none;
+          appearance: none;
+
+          border-radius: 50%;
+          width: 16px;
+          height: 16px;
+
+          border: 2px solid #999;
+          transition: 0.2s all linear;
+          outline: none;
+          margin-right: 5px;
+
+          position: relative;
+          top: 4px;
+        }
+
+        input:checked {
+          border: 6px solid rgb(114, 156, 111);
+        }
+
+      </style>
+ 
+  </head>
+
+  <body>
+      <div class='sidebar'>
+          <div class='heading'>
+            <h1>Community Gardens in Vancouver</h1>
+          </div>
+        <div id='listings' class='listings'></div>
+        </div>
+        <div id='map' class='map'> </div>
+        <button id='fit'>Back to overview</button>>
+    <div id='menu'>
+        <input id='streets' type='radio' name='rtoggle' value='streets'>
+        <label for='streets'>streets</label>
+        <input id='satellite' type='radio' name='rtoggle' value='satellite'>
+        <label for='satellite'>satellite</label>
+        </div>    
+  <script>
+
+
+  if (!('remove' in Element.prototype)) {
+    Element.prototype.remove = function() {
+      if (this.parentNode) {
+          this.parentNode.removeChild(this);
+      }
+    };
+  }
+
+  mapboxgl.accessToken = 'pk.eyJ1IjoiZW1pbHkzMTE3IiwiYSI6ImNqcXlydHpiaDA2dTMzd3BiN252N3ppN3MifQ.ahGQViXshBLhxGafMmmaug';
+
+
+  var bounds = [
+  [-123.434006, 49.116371], // Southwest coordinates
+  [-122.777589, 49.361257]  // Northeast coordinates
+  ];
+
+  var map = new mapboxgl.Map({
+    container: 'map', 
+    style: 'mapbox://styles/emily3117/cjsjoopob2m511fn3wp9cx5r8', 
+    center: [ -123.124597, 49.249229], 
+    zoom: 11,
+    maxBounds: bounds
+  });
+
+  map.on('load', function (e) {
+    map.addSource("places", {
+      "type": "geojson",
+      "data": gardens
+    });
+
+
+    // Initialize the list
+    buildLocationList(gardens);
+
+
+      //geocoder
+    geocoder = new MapboxGeocoder({
+        accessToken: mapboxgl.accessToken,
+        bbox: [-123.348975,  49.139908, -122.680452, 49.381920],
+        placeholder: 'Enter your address to find the closest community garden!'
+    });
+
+     map.addControl(geocoder, 'top-left');
+
+      //point on search
+      // map.addSource('single-point', {
+      // "type": "geojson",
+      // "data": {
+      //   "type": "FeatureCollection",
+      //   "features": [] 
+      //   }
+      // });
+
+    // map.addLayer({
+    //   "id": "point",
+    //   "source": "single-point",
+    //   "type": "circle",
+    //   "paint": {
+    //     "circle-radius": 12,
+    //     "circle-color": "#e96b54",
+    //     "circle-stroke-width": 3,
+    //     "circle-stroke-color": "#fff",
+    //   }
+    // });
+
+
+  
+      geocoder.on('result', function(ev) {
+        var searchResult = ev.result.geometry;
+        //map.getSource('single-point').setData(searchResult);
+      
+        var elYouAreHere = document.createElement('div');
+        elYouAreHere.id = "marker2";
+        elYouAreHere.className = 'marker2';
+        new mapboxgl.Marker(elYouAreHere)
+          .setLngLat(ev.result.geometry.coordinates)
+          .addTo(map);
+    
+      var options = {units: 'kilometers'};
+      gardens.features.forEach(function(garden){
+          Object.defineProperty(garden.properties, 'distance', {
+            value: turf.distance(searchResult, garden.geometry, options),
+            writable: true,
+            enumerable: true,
+            configurable: true
+          });
+        });
+
+      gardens.features.sort(function(a,b){
+        if (a.properties.distance > b.properties.distance) {
+          return 1;
+        }
+        if (a.properties.distance < b.properties.distance) {
+          return -1;
+        }
+        return 0;
+      });
+
+      var listings = document.getElementById('listings');
+      while (listings.firstChild) {
+        listings.removeChild(listings.firstChild);
+      }
+
+      buildLocationList(gardens);
+
+      function sortLonLat(gardenIdentifier) {
+        var lats = [gardens.features[gardenIdentifier].geometry.coordinates[1], searchResult.coordinates[1]]
+        var lons = [gardens.features[gardenIdentifier].geometry.coordinates[0], searchResult.coordinates[0]]
+
+        var sortedLons = lons.sort(function(a,b){
+            if (a > b) { return 1; }
+            if (a.distance < b.distance) { return -1; }
+            return 0;
+          });
+        var sortedLats = lats.sort(function(a,b){
+            if (a > b) { return 1; }
+            if (a.distance < b.distance) { return -1; }
+            return 0;
+          });
+
+        map.fitBounds([
+          [sortedLons[0], sortedLats[0]],
+          [sortedLons[1], sortedLats[1]]
+        ], {
+          padding: 100
+        });
+      };
+
+      sortLonLat(0);
+      createPopUp(gardens.features[0]);
+
+        });
+      });
+
+
+    //insert community garden icon
+    gardens.features.forEach(function(marker,index) {
+      var el = document.createElement('div');
+      el.id = index;
+      el.className = 'marker';
+      new mapboxgl.Marker(el)
+          .setLngLat(marker.geometry.coordinates)
+          .addTo(map);
+
+    //Listeners for when an icon is clicked
+    el.addEventListener('click', function(e){
+        flyToGardens(marker);// 1. Fly to the point
+        createPopUp(marker);// 2. Close all other popups and display popup for clicked store
+        // 3. Highlight listing in sidebar (and remove highlight for all other listings)
+   
+        var activeItem = document.getElementsByClassName('active');
+
+        e.stopPropagation();
+        if (activeItem[0]) {
+           activeItem[0].classList.remove('active');
+        }
+
+        var listing = document.getElementById('listing-' + this.id );
+        listing.classList.add('active');   
+        // listing.scrollIntoView()  
+        
+        // var offset = listing.offsetTop()
+        // document.elementClassName('sidebar').scrollTop = offset + 65
+          });
+  });
+
+      //flyto garden settings
+      function flyToGardens(currentFeature) {
+          map.flyTo({
+              center: currentFeature.geometry.coordinates,
+              zoom: 15
+            });
+        }
+      
+        //popup windows
+        function createPopUp(currentFeature) {
+          var popUps = document.getElementsByClassName('mapboxgl-popup');
+          if (popUps[0]) popUps[0].remove();
+
+
+          var popup = new mapboxgl.Popup()
+                .setLngLat(currentFeature.geometry.coordinates)
+                .setHTML('<h3>Community Garden</h3>' +
+                  '<h4>' + currentFeature.properties.NAME + '</h4>' + '<h5>' + 'Number of plots: ' + currentFeature.properties.NUMBER_OF_PLOTS + '</h5>')
+                .addTo(map);
+        }
+
+
+        //sidebar listing
+        function buildLocationList(data) {
+          for (i = 0; i < data.features.length; i++) {
+            var currentFeature = data.features[i];
+            var prop = currentFeature.properties;
+
+            var listings = document.getElementById('listings');
+            var listing = listings.appendChild(document.createElement('div'));
+            listing.className = 'item';
+            listing.id = "listing-" + i;
+
+            var link = listing.appendChild(document.createElement('a'));
+            link.href = '#';
+            link.className = 'title';
+            link.dataPosition = i;
+            link.innerHTML = prop.NAME;
+
+            var details = listing.appendChild(document.createElement('div'));
+            details.innerHTML = prop.MERGED_ADDRESS;
+            
+            if (prop.distance) {
+              var roundedDistance = Math.round(prop.distance*100)/100;
+              details.innerHTML += '<p><strong>' + 'Distance: ' + roundedDistance + ' kilometers</strong></p>';
+            }
+            
+            //listener for when a link is clicked
+            link.addEventListener('click', function(e){
+              var clickedListing = data.features[this.dataPosition];
+              
+              flyToGardens(clickedListing);// 1. Fly to the point
+              createPopUp(clickedListing);// 2. Close all others and display popup for clicked store
+              var activeItem = document.getElementsByClassName('active');// 3. Highlight listing in sidebar
+
+              if (activeItem[0]) {
+                activeItem[0].classList.remove('active');
+              }
+              this.parentNode.classList.add('active');
+
+            });
+          }
+        }
+
+    //resume to overview
+    document.getElementById('fit').addEventListener('click', function() {
+    map.fitBounds([[
+      -123.296325,
+      49.191191
+        ], [
+        -122.985307,
+        49.321278
+        ]]);
+      });
+  
+
+    //change map style
+
+    var layerList = document.getElementById('menu');
+    var inputs = layerList.getElementsByTagName('input');
+    
+    function switchLayer(layer) {
+    var layerId = layer.target.id;
+    map.setStyle('mapbox://styles/mapbox/' + layerId + '-v9');
+    }
+    
+    for (var i = 0; i < inputs.length; i++) {
+    inputs[i].onclick = switchLayer;
+    }
+    </script>
+  </body>
+</html>

@@ -65,12 +65,19 @@ I did a map critique with Kiyomi, Mychelle and Louisa. They gave some helpful ad
 Below are the tutorials and examples I followed to produced this map. I have added notes in my code to indicate where I used these resources.
 
 Build a garden locator: https://docs.mapbox.com/help/tutorials/building-a-store-locator/ 
+
 Change a map style: https://docs.mapbox.com/mapbox-gl-js/example/setstyle/
+
 Create Back to Overview button: https://docs.mapbox.com/mapbox-gl-js/example/flyto/
+
 Add custom markers: https://docs.mapbox.com/mapbox-gl-js/example/custom-marker-icons/
+
 Add a geocoder: https://docs.mapbox.com/mapbox-gl-js/example/mapbox-gl-geocoder/
+
 Limit geocoder search to Vancouver: https://docs.mapbox.com/mapbox-gl-js/example/mapbox-gl-geocoder-limit-region/
+
 Change placeholder for the search box: https://github.com/mapbox/mapbox-gl-geocoder
+
 Style map with CSS: https://www.w3schools.com/
 
 ## **Link to Map**

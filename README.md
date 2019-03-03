@@ -55,9 +55,24 @@ Second, the satellite map view does not necessarily provide an accurate represen
 
 Third, only the default Mapbox map styles can be specified in the map style switcher. When users select Street on the switcher, the base map will be that with a high-contrast colour system instead of the one I had modified with a visual hierarchy in mind. Unfortunately, the checkboxes cannot be unchecked, and the only way to get back to the original base map is to reload the page.
 
-Finally, I was hoping to add a filter for the gardens data based on their ‘Jurisdiction’ property values. This property is important as it indicates whether the gardens are owned by the city, park board, TransLink, or private property (i.e. whether may users are allowed to garden there or not). However, it was not possible to extract property information from the customer markers so I was not able to create those filters. 
+Finally, I was hoping to add a filter for the gardens data based on their ‘Jurisdiction’ property values. This property is important as it indicates whether the gardens are owned by the city, park board, TransLink, or private property (i.e. whether may users are allowed to garden there or not). However, it was not possible to extract property information from the customer markers so I was not able to create those filters.<sup>7</sup> 
 
- 
+
+##**Map Critique**
+
+I did a map critique with Kiyomi, Mychelle and Louisa. They gave some helpful advices such as customizing the search box from ‘Search’ to ‘Enter your address here’ and choosing milder colors for the base to enhance visual hierarchy. I also contributed to the map critique for Kiyomi about making larger circle for crimes and Louisa about having a more vibrant base map to catch map users’ attention.
+
+Below are the tutorials and examples I followed to produced this map. I have added notes in my code to indicate where I used these resources.
+
+Build a garden locator: https://docs.mapbox.com/help/tutorials/building-a-store-locator/ 
+Change a map style: https://docs.mapbox.com/mapbox-gl-js/example/setstyle/
+Create Back to Overview button: https://docs.mapbox.com/mapbox-gl-js/example/flyto/
+Add custom markers: https://docs.mapbox.com/mapbox-gl-js/example/custom-marker-icons/
+Add a geocoder: https://docs.mapbox.com/mapbox-gl-js/example/mapbox-gl-geocoder/
+Limit geocoder search to Vancouver: https://docs.mapbox.com/mapbox-gl-js/example/mapbox-gl-geocoder-limit-region/
+Change placeholder for the search box: https://github.com/mapbox/mapbox-gl-geocoder
+Style map with CSS: https://www.w3schools.com/
+
 ## **Link to Map**
 
 https://emilyl3117.github.io/WebMapping/PipelineIncidents.html
@@ -78,3 +93,5 @@ The community Garden data was obtained from the City of Vancouver Open Data Cata
 <sup>5</sup> “The Guide to Map Design,” 19
 
 <sup>6</sup> UCGIS
+
+<sup>7</sup>I tried following this tutorial to create the filter: https://docs.mapbox.com/mapbox-gl-js/example/filter-markers/
